@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+
+screenshots/
+*.png
+debug_*.html
