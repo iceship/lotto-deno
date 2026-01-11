@@ -5,48 +5,118 @@ import { createBrowser } from "./browser.ts";
 import { login } from "./login.ts";
 
 export interface LottoResult {
-  result: string;
+  count: number;
   screenshotPath: string;
 }
 
-export async function buyLotto645(page: Page): Promise<LottoResult> {
+export async function buyLotto645(page: Page): Promise<LottoResult | null> {
   console.log('🚀 Navigating to Lotto 6/45 page...');
   await page.goto("https://ol.dhlottery.co.kr/olotto/game/game645.do");
+
+  // 게임 화면 로딩 대기
   await page.waitForSelector("#num2", { state: "visible", timeout: 10000 });
 
+  // 1. 초기 팝업 닫기
   if (await page.locator("#popupLayerAlert").isVisible()) {
-    await page.locator("#popupLayerAlert").getByRole("button", { name: "확인" }).click();
+    await page.click("#popupLayerAlert input[value='확인'], #popupLayerAlert button");
   }
 
-  const autoGames = 5;
-  if (autoGames > 0) {
-    await page.click("#num2");
-    await page.selectOption("#amoundApply", String(autoGames));
-    await page.click("#btnSelectNum");
-    console.log(`✅ Automatic game(s) added: ${autoGames}`);
+  const autoGames = 1; // 구매할 게임 수
+  const expectedAmount = autoGames * 1000; // 예상 금액 (1000원)
 
+  if (autoGames > 0) {
+    // 2. 번호 선택 (자동)
+    await page.click("#num2"); // 자동선택
+    await page.selectOption("#amoundApply", String(autoGames)); // 수량선택
+    await page.click("#btnSelectNum"); // 확인 버튼
+    console.log(`✅ Automatic game(s) selected: ${autoGames}`);
+
+    // ----------------------------------------------------
+    // 3. [NEW] 결제 금액 검증 (Python 코드 로직 이식)
+    // ----------------------------------------------------
+    console.log("💰 Verifying payment amount...");
+    // 금액 텍스트가 업데이트될 때까지 아주 잠깐 대기
+    await page.waitForTimeout(500);
+
+    const payAmtEl = page.locator("#payAmt");
+    const payText = await payAmtEl.innerText();
+    // 숫자만 추출 (예: "5,000원" -> 5000)
+    const currentAmount = parseInt(payText.replace(/[^0-9]/g, ""), 10);
+
+    if (currentAmount !== expectedAmount) {
+      throw new Error(`❌ Payment mismatch! Expected: ${expectedAmount}, Displayed: ${currentAmount}`);
+    }
+    console.log(`✅ Amount verified: ${currentAmount} KRW`);
+
+
+    // ----------------------------------------------------
+    // 4. 구매 버튼 클릭
+    // ----------------------------------------------------
+    console.log("💳 Clicking Buy button...");
+    await page.click("#btnBuy");
+
+
+    // ----------------------------------------------------
+    // 5. '구매하시겠습니까?' 확인 팝업 처리
+    // ----------------------------------------------------
+    console.log("⏳ Waiting for confirm popup...");
+    await page.waitForSelector("#popupLayerConfirm", { state: "visible", timeout: 5000 });
+
+    // '확인' 클릭
+    await page.click('#popupLayerConfirm input[value="확인"]');
+    console.log("✅ Confirmed purchase dialog.");
+
+
+    // ----------------------------------------------------
+    // 6. [NEW] 결과 확인 (한도 초과 vs 성공)
+    // ----------------------------------------------------
+    console.log("⏳ Analyzing purchase result...");
+
+    // 네트워크 딜레이 등을 고려해 잠시 대기 (Python의 time.sleep(3) 대응)
+    // 팝업이 뜨는 시간을 1초 정도 기다려줍니다.
+    await page.waitForTimeout(1000);
+
+    // (A) 한도 초과 팝업 감지 (#recommend720Plus)
+    const limitPopup = page.locator("#recommend720Plus");
+    if (await limitPopup.isVisible()) {
+      // 에러 메시지 추출 시도
+      const errorMsg = await limitPopup.locator(".cont1").innerText().catch(() => "Weekly Limit Exceeded");
+      // 한도 초과 시 에러를 던져서 main.ts가 스크린샷 찍고 종료하게 함
+      throw new Error(`❌ Purchase Failed: ${errorMsg.trim().replace(/\n/g, " ")}`);
+    }
+
+    // (B) 성공 영수증 대기 (#report)
+    // 사용자님이 주신 HTML 분석 결과: <div id="report"> 가 영수증입니다.
+    try {
+      console.log("⏳ Waiting for receipt popup (#report)...");
+      await page.waitForSelector("#report", { state: "visible", timeout: 15000 });
+    } catch (_e) {
+      // 영수증도 안 뜨고 한도 초과도 아니라면, 알 수 없는 에러 팝업(#popupLayerAlert)이 떴을 수 있음
+      if (await page.locator("#popupLayerAlert").isVisible()) {
+        const alertMsg = await page.locator("#popupLayerAlert .layer-message").innerText();
+        throw new Error(`❌ Generic Error Alert: ${alertMsg}`);
+      }
+      throw new Error("❌ Purchase receipt did not appear (Timeout).");
+    }
+    // ----------------------------------------------------
+    // 7. 성공 스크린샷 저장
+    // ----------------------------------------------------
+    console.log("📸 Saving final receipt...");
     const dirName = "screenshots";
     await ensureDir(dirName);
 
-    const fileName = `verify_645_${new Date().toISOString().split('T')[0]}.png`;
+    const fileName = `result_645_${new Date().toISOString().split('T')[0]}.png`;
     const screenshotPath = `${dirName}/${fileName}`;
 
     await page.screenshot({ path: screenshotPath, fullPage: true });
-    console.log(`✅ Screenshot saved: ${screenshotPath}`);
-
-    // 실제 구매 버튼 (나중에 주석 해제)
-    // await page.click("#btnBuy");
+    console.log(`✅ Receipt saved: ${screenshotPath}`);
 
     return {
-      result: `자동 게임 ${autoGames}개 추가됨`,
+      count: autoGames,
       screenshotPath: screenshotPath
     };
   }
-
-  return {
-    result: "No games were added.",
-    screenshotPath: ""
-  }
+  return null;
 }
 
 async function run() {
