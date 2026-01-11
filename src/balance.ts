@@ -15,7 +15,17 @@ export async function getBalance(page: Page): Promise<BalanceInfo> {
   // Navigate to My Page
   console.log('📂 Accessing My Page...');
   await page.goto("https://www.dhlottery.co.kr/mypage/home");
-  await page.waitForLoadState("networkidle");
+  //await page.waitForLoadState("networkidle");
+
+  console.log('⏳ Waiting for balance element...');
+  try {
+    await page.waitForSelector("#totalAmt", { state: "visible", timeout: 15000 });
+  } catch (e) {
+
+    // 만약 여기서 에러가 나면, 로그인 풀림 등을 의심해볼 수 있음
+    console.error("⚠️ Failed to find balance element. Current URL:", page.url());
+    throw e;
+  }
 
   // Get deposit balance (예치금 잔액)
   // Selector: #totalAmt

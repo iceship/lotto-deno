@@ -4,6 +4,7 @@ import { login } from "./src/login.ts";
 import { getBalance } from "./src/balance.ts";
 import { buyLotto645 } from "./src/lotto645.ts";
 import { sendDiscord } from "./src/notify.ts";
+import { handleFatalError } from "./src/error-handler.ts";
 
 async function main() {
   console.log("🎰 Lotto Auto Purchase (Deno Integrated)");
@@ -15,7 +16,8 @@ async function main() {
 
   try {
     await login(page);
-    await new Promise(r => setTimeout(r, 1000));
+    console.log("⏳ Waiting for session to stabilize...");
+    await new Promise(r => setTimeout(r, 3000));
 
     console.log("💰 Checking balance...");
     const balance = await getBalance(page);
@@ -49,7 +51,7 @@ async function main() {
 
   } catch (error) {
     console.error("\n❌ Critical Error:", error);
-    await sendDiscord(`❌ **오류 발생:** ${error}`);
+    await handleFatalError(page, error);
   } finally {
     console.log("🔒 Closing browser session...");
     await context.close();
