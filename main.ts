@@ -42,7 +42,7 @@ async function main() {
 
     // 4. 로또 구매 실행
     // (충분한 잔액이 확인되었으므로 안전하게 진입)
-    const result = await buyLotto645(page);
+    const result = await buyLotto645(page, GAME_COUNT);
 
     // 5. [구매 후] 최종 잔액 확인 (Post-check)
     // 구매가 성공했다면 잔액이 줄어들었을 테니 다시 확인합니다.

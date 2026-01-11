@@ -3,14 +3,13 @@ import { ensureDir } from "@std/fs/ensure-dir";
 import { Page } from "playwright-core";
 import { createBrowser } from "./browser.ts";
 import { login } from "./login.ts";
-import { env } from "./env.ts";
 
 export interface LottoResult {
   count: number;
   screenshotPath: string;
 }
 
-export async function buyLotto645(page: Page): Promise<LottoResult | null> {
+export async function buyLotto645(page: Page, gameCount: number): Promise<LottoResult | null> {
   console.log('🚀 Navigating to Lotto 6/45 page...');
   await page.goto("https://ol.dhlottery.co.kr/olotto/game/game645.do");
 
@@ -22,7 +21,7 @@ export async function buyLotto645(page: Page): Promise<LottoResult | null> {
     await page.click("#popupLayerAlert input[value='확인'], #popupLayerAlert button");
   }
 
-  const autoGames = env.AUTO_GAMES; // 구매할 게임 수
+  const autoGames = gameCount; // 구매할 게임 수
   const expectedAmount = autoGames * 1000; // 예상 금액 (1000원)
 
   if (autoGames > 0) {
@@ -125,7 +124,7 @@ async function run() {
   const page = await context.newPage();
   try {
     await login(page);
-    const result = await buyLotto645(page);
+    const result = await buyLotto645(page, 5);
     console.log("Result:", result);
   } finally {
     await browser.close();
