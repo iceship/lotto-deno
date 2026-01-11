@@ -3,6 +3,7 @@ import { ensureDir } from "@std/fs/ensure-dir";
 import { Page } from "playwright-core";
 import { createBrowser } from "./browser.ts";
 import { login } from "./login.ts";
+import { env } from "./env.ts";
 
 export interface LottoResult {
   count: number;
@@ -21,7 +22,7 @@ export async function buyLotto645(page: Page): Promise<LottoResult | null> {
     await page.click("#popupLayerAlert input[value='확인'], #popupLayerAlert button");
   }
 
-  const autoGames = 1; // 구매할 게임 수
+  const autoGames = env.AUTO_GAMES; // 구매할 게임 수
   const expectedAmount = autoGames * 1000; // 예상 금액 (1000원)
 
   if (autoGames > 0) {
@@ -86,7 +87,6 @@ export async function buyLotto645(page: Page): Promise<LottoResult | null> {
     }
 
     // (B) 성공 영수증 대기 (#report)
-    // 사용자님이 주신 HTML 분석 결과: <div id="report"> 가 영수증입니다.
     try {
       console.log("⏳ Waiting for receipt popup (#report)...");
       await page.waitForSelector("#report", { state: "visible", timeout: 15000 });

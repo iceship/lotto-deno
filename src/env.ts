@@ -10,6 +10,7 @@ const envSchema = z.object({
   BROWSERLESS_WS_ENDPOINT: z.url(),
   BROWSERLESS_TOKEN: z.string().optional(),
   DISCORD_WEBHOOK_URL: z.url().optional(),
+  AUTO_GAMES: z.coerce.number().int().min(1).max(5).default(5),
 });
 
 const parsed = envSchema.safeParse(Deno.env.toObject());

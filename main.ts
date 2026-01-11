@@ -5,8 +5,9 @@ import { getBalance } from "./src/balance.ts";
 import { buyLotto645 } from "./src/lotto645.ts";
 import { sendDiscord } from "./src/notify.ts";
 import { handleFatalError } from "./src/error-handler.ts";
-// 구매 설정 (lotto645.ts와 맞춰주세요)
-const GAME_COUNT = 5;
+import { env } from "./src/env.ts";
+
+const GAME_COUNT = env.AUTO_GAMES;
 const PRICE_PER_GAME = 1000;
 const REQUIRED_MONEY = GAME_COUNT * PRICE_PER_GAME;
 
