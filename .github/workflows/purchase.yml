@@ -1,0 +1,32 @@
+name: Lotto Auto Purchase (Deno)
+
+on:
+  # 1. 수동 실행 버튼 (테스트용)
+  workflow_dispatch:
+
+  # 2. 자동 스케줄링 (UTC 기준)
+  schedule:
+    # 한국 시간(KST) = UTC + 9시간
+    # 예: UTC 01:00 = KST 오전 10:00
+    # 매주 토요일 오전 10시 00분에 실행 (혹시 모를 서버 점검 등을 피해 여유 있게 설정)
+    - cron: "0 1 * * 6"
+
+jobs:
+  purchase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: lts
+
+      - name: Create .env file
+        run: |
+          echo "${{ secrets.DOTENV }}" > .env
+
+      - name: Run Lotto Purchase
+        run: deno task purchase
