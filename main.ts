@@ -62,12 +62,32 @@ async function main() {
 
   } catch (error) {
     // 에러 발생 시 (로그인 실패, 구매 중 에러 등)
-    await handleFatalError(page, error);
-    throw error;
+    console.error("\n❌ Error caught in main:", error);
+    try {
+      await handleFatalError(page, error);
+    } catch (handlerError) {
+      console.error("❌ Error handler itself failed:", handlerError);
+    }
   } finally {
     console.log("🔒 Closing browser session...");
-    try { await context.close(); } catch (_e) { /* ignore close errors */ }
-    try { await browser.close(); } catch (_e) { /* ignore close errors */ }
+    try {
+      if (!page.isClosed()) {
+        console.log("  ├─ Closing page...");
+        await page.close();
+      }
+    } catch (e) { console.warn("  ├─ Page close warning:", e); }
+
+    try {
+      console.log("  ├─ Closing context...");
+      await context.close();
+    } catch (e) { console.warn("  ├─ Context close warning:", e); }
+
+    try {
+      console.log("  ├─ Closing browser...");
+      await browser.close();
+    } catch (e) { console.warn("  ├─ Browser close warning:", e); }
+
+    console.log("✅ Browser session closed.");
   }
 }
 

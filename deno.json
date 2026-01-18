@@ -11,5 +11,11 @@
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "playwright-core": "npm:playwright-core@^1.57.0",
     "zod": "npm:zod@^4.3.5"
+  },
+  "lint": {
+    "exclude": ["logs", "screenshots"],
+    "rules": {
+      "exclude": ["no-explicit-any"]
+    }
   }
 }

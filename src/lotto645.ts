@@ -16,19 +16,64 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
   // 게임 화면 로딩 대기
   await page.waitForSelector("#num2", { state: "visible", timeout: 10000 });
 
-  // 1. 초기 팝업 닫기
-  if (await page.locator("#popupLayerAlert").isVisible()) {
-    await page.click("#popupLayerAlert input[value='확인'], #popupLayerAlert button");
-  }
+  // 팝업 제거 함수
+  const removePopup = async () => {
+    try {
+      // 팝업 요소를 제거
+      await page.evaluate(() => {
+        const ele = (self as any).document.getElementById("ele_pause_layer_pop02");
+        if (ele) ele.remove();
+      }).catch(() => null);
+
+      await page.evaluate(() => {
+        const bg = (self as any).document.querySelector(".pause_bg");
+        if (bg) bg.remove();
+      }).catch(() => null);
+
+      await page.evaluate(() => {
+        const layer = (self as any).document.querySelector(".pause_layer_pop");
+        if (layer) layer.remove();
+      }).catch(() => null);
+
+      console.log("✨ Popup removed via JavaScript");
+    } catch (e) {
+      console.log("⚠️ Popup removal warning:", e);
+    }
+  };
+
+  // 1. 초기 팝업 제거
+  await removePopup();
+  await page.waitForTimeout(300);
 
   const autoGames = gameCount; // 구매할 게임 수
   const expectedAmount = autoGames * 1000; // 예상 금액 (1000원)
 
   if (autoGames > 0) {
+    // 1.5 클릭 전 팝업 재확인 (혹시 모르니)
+    console.log("🔍 Final popup check before clicking #num2...");
+    const pausePopup2 = page.locator("#ele_pause_layer_pop02");
+    if (await pausePopup2.isVisible()) {
+      console.log("⏸️ Popup still visible, removing via JavaScript...");
+      await removePopup();
+      await page.waitForTimeout(500);
+    }
+
     // 2. 번호 선택 (자동)
-    await page.click("#num2"); // 자동선택
+    // 강력한 클릭: force=true를 사용해 팝업 무시
+    console.log("🖱️ Clicking #num2 (auto selection)...");
+    await page.click("#num2", { force: true, timeout: 5000 });
+
+    console.log("⏳ Waiting for selection menu...");
+    await page.waitForTimeout(500);
+
     await page.selectOption("#amoundApply", String(autoGames)); // 수량선택
-    await page.click("#btnSelectNum"); // 확인 버튼
+
+    // 버튼 클릭 전 재차 팝업 제거
+    console.log("🔍 Final popup check before clicking #btnSelectNum...");
+    await removePopup();
+
+    console.log("✅ Confirming selection...");
+    await page.click("#btnSelectNum", { force: true }); // 확인 버튼 (force=true 추가)
     console.log(`✅ Automatic game(s) selected: ${autoGames}`);
 
     // ----------------------------------------------------

@@ -3,5 +3,4 @@
 !.env.example
 
 screenshots/
-*.png
-debug_*.html
+logs/
