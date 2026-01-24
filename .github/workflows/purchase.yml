@@ -10,7 +10,8 @@ on:
     # 예: UTC 01:00 = KST 오전 10:00
     # 매주 월요일 오전 06시 06분에 실행 (혹시 모를 서버 점검 등을 피해 여유 있게 설정)
     - cron: "6 21 * * 0"  # 매주 일요일 21:06 UTC = 월요일 06:06 KST
-
+    - cron: "6 21 * * 5"
+    
 jobs:
   purchase:
     runs-on: ubuntu-latest
