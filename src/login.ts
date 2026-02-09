@@ -33,7 +33,7 @@ export async function login(page: Page) {
       timeout: 10000
     });
 
-    console.log('✅ Logged in successfully (My Page button found)');
+    console.log('✅ Logged in successfully (#logoutBtn found)');
   } catch (_e) {
     console.error(`❌ Login Verification Failed! URL: ${page.url()}`);
     throw new Error("Login failed: '#logoutBtn' not found.");
