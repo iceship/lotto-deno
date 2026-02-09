@@ -27,8 +27,8 @@ export async function login(page: Page) {
   await page.click("#btnLogin");
 
   try {
-    console.log("⏳ Verifying login status (Checking for ID '#mypageBtn')...");
-    await page.waitForSelector("#mypageBtn", {
+    console.log("⏳ Verifying login status (Checking for ID '#logoutBtn')...");
+    await page.waitForSelector("#logoutBtn", {
       state: "attached",
       timeout: 10000
     });
@@ -36,6 +36,6 @@ export async function login(page: Page) {
     console.log('✅ Logged in successfully (My Page button found)');
   } catch (_e) {
     console.error(`❌ Login Verification Failed! URL: ${page.url()}`);
-    throw new Error("Login failed: '#mypageBtn' with text '마이페이지' not found.");
+    throw new Error("Login failed: '#logoutBtn' not found.");
   }
 }
