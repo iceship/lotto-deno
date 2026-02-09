@@ -14,7 +14,11 @@ export async function sendDiscord(message: string, imagePath?: string) {
 
     const payload = {
       content: message,
-      embeds: [{ title: "로또 구매 알림", description: message, color: 5814783 }]
+      embeds: [{
+        title: "로또 구매 알림",
+        description: message,
+        color: 5814783,
+      }],
     };
 
     formData.append("payload_json", JSON.stringify(payload));
@@ -36,11 +40,12 @@ export async function sendDiscord(message: string, imagePath?: string) {
     });
 
     if (!response.ok) {
-      console.error(`❌ Discord Webhook Error: ${response.status} ${response.statusText}`);
+      console.error(
+        `❌ Discord Webhook Error: ${response.status} ${response.statusText}`,
+      );
     } else {
       console.log("🔔 Discord notification sent!");
     }
-
   } catch (error) {
     console.error("❌ Failed to send notification:", error);
   }

@@ -9,8 +9,11 @@ export interface LottoResult {
   screenshotPath: string;
 }
 
-export async function buyLotto645(page: Page, gameCount: number): Promise<LottoResult | null> {
-  console.log('🚀 Navigating to Lotto 6/45 page...');
+export async function buyLotto645(
+  page: Page,
+  gameCount: number,
+): Promise<LottoResult | null> {
+  console.log("🚀 Navigating to Lotto 6/45 page...");
   await page.goto("https://ol.dhlottery.co.kr/olotto/game/game645.do");
 
   // 게임 화면 로딩 대기
@@ -21,7 +24,9 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
     try {
       // 팝업 요소를 제거
       await page.evaluate(() => {
-        const ele = (self as any).document.getElementById("ele_pause_layer_pop02");
+        const ele = (self as any).document.getElementById(
+          "ele_pause_layer_pop02",
+        );
         if (ele) ele.remove();
       }).catch(() => null);
 
@@ -89,10 +94,11 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
     const currentAmount = parseInt(payText.replace(/[^0-9]/g, ""), 10);
 
     if (currentAmount !== expectedAmount) {
-      throw new Error(`❌ Payment mismatch! Expected: ${expectedAmount}, Displayed: ${currentAmount}`);
+      throw new Error(
+        `❌ Payment mismatch! Expected: ${expectedAmount}, Displayed: ${currentAmount}`,
+      );
     }
     console.log(`✅ Amount verified: ${currentAmount} KRW`);
-
 
     // ----------------------------------------------------
     // 4. 구매 버튼 클릭
@@ -100,17 +106,18 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
     console.log("💳 Clicking Buy button...");
     await page.click("#btnBuy");
 
-
     // ----------------------------------------------------
     // 5. '구매하시겠습니까?' 확인 팝업 처리
     // ----------------------------------------------------
     console.log("⏳ Waiting for confirm popup...");
-    await page.waitForSelector("#popupLayerConfirm", { state: "visible", timeout: 5000 });
+    await page.waitForSelector("#popupLayerConfirm", {
+      state: "visible",
+      timeout: 5000,
+    });
 
     // '확인' 클릭
     await page.click('#popupLayerConfirm input[value="확인"]');
     console.log("✅ Confirmed purchase dialog.");
-
 
     // ----------------------------------------------------
     // 6. [NEW] 결과 확인 (한도 초과 vs 성공)
@@ -125,19 +132,27 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
     const limitPopup = page.locator("#recommend720Plus");
     if (await limitPopup.isVisible()) {
       // 에러 메시지 추출 시도
-      const errorMsg = await limitPopup.locator(".cont1").innerText().catch(() => "Weekly Limit Exceeded");
+      const errorMsg = await limitPopup.locator(".cont1").innerText().catch(
+        () => "Weekly Limit Exceeded",
+      );
       // 한도 초과 시 에러를 던져서 main.ts가 스크린샷 찍고 종료하게 함
-      throw new Error(`❌ Purchase Failed: ${errorMsg.trim().replace(/\n/g, " ")}`);
+      throw new Error(
+        `❌ Purchase Failed: ${errorMsg.trim().replace(/\n/g, " ")}`,
+      );
     }
 
     // (B) 성공 영수증 대기 (#report)
     try {
       console.log("⏳ Waiting for receipt popup (#report)...");
-      await page.waitForSelector("#report", { state: "visible", timeout: 15000 });
+      await page.waitForSelector("#report", {
+        state: "visible",
+        timeout: 15000,
+      });
     } catch (_e) {
       // 영수증도 안 뜨고 한도 초과도 아니라면, 알 수 없는 에러 팝업(#popupLayerAlert)이 떴을 수 있음
       if (await page.locator("#popupLayerAlert").isVisible()) {
-        const alertMsg = await page.locator("#popupLayerAlert .layer-message").innerText();
+        const alertMsg = await page.locator("#popupLayerAlert .layer-message")
+          .innerText();
         throw new Error(`❌ Generic Error Alert: ${alertMsg}`);
       }
       throw new Error("❌ Purchase receipt did not appear (Timeout).");
@@ -149,7 +164,7 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
     const dirName = "screenshots";
     await ensureDir(dirName);
 
-    const fileName = `result_645_${new Date().toISOString().split('T')[0]}.png`;
+    const fileName = `result_645_${new Date().toISOString().split("T")[0]}.png`;
     const screenshotPath = `${dirName}/${fileName}`;
 
     await page.screenshot({ path: screenshotPath, fullPage: true });
@@ -157,7 +172,7 @@ export async function buyLotto645(page: Page, gameCount: number): Promise<LottoR
 
     return {
       count: autoGames,
-      screenshotPath: screenshotPath
+      screenshotPath: screenshotPath,
     };
   }
   return null;

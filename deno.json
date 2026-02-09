@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts",
+    "dev": "doppler run -- deno run --watch main.ts",
     "purchase": "deno run --allow-all main.ts",
     "balance": "deno run --allow-all src/balance.ts",
     "lotto645": "deno run --allow-all src/lotto645.ts"

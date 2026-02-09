@@ -1,5 +1,5 @@
 // src/browser.ts
-import { chromium, Browser } from "playwright-core";
+import { Browser, chromium } from "playwright-core";
 import { env } from "./env.ts";
 
 /**
@@ -19,14 +19,16 @@ export async function createBrowser(): Promise<Browser> {
     // ⭐️ 공통 옵션 설정 (Stealth, Window Size, User Agent)
     endpoint.searchParams.set("stealth", "true");
     endpoint.searchParams.set("--window-size", "1920,1080");
-    endpoint.searchParams.set("--user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    endpoint.searchParams.set(
+      "--user-agent",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    );
 
     console.log(`📡 Connecting over CDP to: ${endpoint.origin}...`);
     return await chromium.connectOverCDP(endpoint.toString());
-
   } else {
     // 로컬 브라우저 실행 (백업용)
-    console.log('🖥️ Launching local browser...');
+    console.log("🖥️ Launching local browser...");
     return await chromium.launch({ headless: true });
   }
 }

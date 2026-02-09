@@ -14,14 +14,14 @@ function logErrorToFile(error: unknown) {
   const logEntry = `\n[${timestamp}] FATAL ERROR\n` +
     `Message: ${errorMessage}\n` +
     `Stack: ${stack}\n` +
-    `${'='.repeat(60)}`;
+    `${"=".repeat(60)}`;
 
   try {
     // 로그 디렉토리 생성
     Deno.mkdirSync("logs", { recursive: true });
 
     // 로그 파일에 추가
-    const logPath = `logs/error_${new Date().toISOString().split('T')[0]}.log`;
+    const logPath = `logs/error_${new Date().toISOString().split("T")[0]}.log`;
     Deno.writeTextFileSync(logPath, logEntry, { append: true });
     console.log(`📝 Error logged to: ${logPath}`);
   } catch (writeError) {
@@ -49,25 +49,33 @@ export async function handleFatalError(page: Page, error: unknown) {
       const dirName = "screenshots";
       await ensureDir(dirName);
 
-      const fileName = `error_${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+      const fileName = `error_${
+        new Date().toISOString().replace(/[:.]/g, "-")
+      }.png`;
       screenshotPath = `${dirName}/${fileName}`;
 
       console.log("📸 Attempting to capture error screenshot...");
       await page.screenshot({ path: screenshotPath, fullPage: true });
       console.log(`✅ Error screenshot saved: ${screenshotPath}`);
     } else {
-      console.warn("⚠️ Browser page is already closed. Cannot take screenshot.");
+      console.warn(
+        "⚠️ Browser page is already closed. Cannot take screenshot.",
+      );
     }
   } catch (snapError) {
     console.error("❌ Failed to take error screenshot:", snapError);
   }
 
   // 2. 디스코드 알림 발송
-  const pageStatus = page.isClosed() ? '❌ Closed' : `✅ ${page.url()}`;
+  const pageStatus = page.isClosed() ? "❌ Closed" : `✅ ${page.url()}`;
   const discordMessage = `❌ **오류 발생 (Critical Error)**\n` +
     `📄 페이지 상태: ${pageStatus}\n` +
     `💬 에러 메시지:\n\`\`\`${errorMessage}\`\`\`` +
-    (errorStack ? `\n\n📋 스택 트레이스:\n\`\`\`${errorStack.split('\n').slice(0, 5).join('\n')}...\`\`\`` : '');
+    (errorStack
+      ? `\n\n📋 스택 트레이스:\n\`\`\`${
+        errorStack.split("\n").slice(0, 5).join("\n")
+      }...\`\`\``
+      : "");
 
   await sendDiscord(discordMessage, screenshotPath);
 }

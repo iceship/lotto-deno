@@ -10,9 +10,9 @@ export async function login(page: Page) {
     throw new Error("❌ USER_ID or PASSWD not found in environment variables.");
   }
 
-  console.log('🔑 Starting login process...');
+  console.log("🔑 Starting login process...");
 
-  page.on('dialog', async dialog => {
+  page.on("dialog", async (dialog) => {
     console.warn(`💬 Alert detected on login page: "${dialog.message()}"`);
     await dialog.accept(); // 확인 버튼 누름
   });
@@ -30,10 +30,10 @@ export async function login(page: Page) {
     console.log("⏳ Verifying login status (Checking for ID '#logoutBtn')...");
     await page.waitForSelector("#logoutBtn", {
       state: "attached",
-      timeout: 10000
+      timeout: 10000,
     });
 
-    console.log('✅ Logged in successfully (#logoutBtn found)');
+    console.log("✅ Logged in successfully (#logoutBtn found)");
   } catch (_e) {
     console.error(`❌ Login Verification Failed! URL: ${page.url()}`);
     throw new Error("Login failed: '#logoutBtn' not found.");

@@ -48,18 +48,21 @@ async function main() {
     // 구매가 성공했다면 잔액이 줄어들었을 테니 다시 확인합니다.
     console.log("💰 Checking final balance...");
     const finalBalance = await getBalance(page);
-    console.log(`💵 Final Funds: ${finalBalance.available_amount.toLocaleString()} KRW`);
+    console.log(
+      `💵 Final Funds: ${finalBalance.available_amount.toLocaleString()} KRW`,
+    );
 
     // 6. 결과 디스코드 전송 (성공 알림)
     if (result) {
       const message = `✅ **로또 6/45 구매 완료!**\n` +
-        `🎫 **수량:** 자동 ${result.count}게임 (₩${(result.count * 1000).toLocaleString()})\n` +
+        `🎫 **수량:** 자동 ${result.count}게임 (₩${
+          (result.count * 1000).toLocaleString()
+        })\n` +
         `📉 **구매 후 잔액:** ${finalBalance.available_amount.toLocaleString()}원\n` +
         `🍀 행운을 빕니다!`;
 
       await sendDiscord(message, result.screenshotPath);
     }
-
   } catch (error) {
     // 에러 발생 시 (로그인 실패, 구매 중 에러 등)
     console.error("\n❌ Error caught in main:", error);
@@ -75,17 +78,23 @@ async function main() {
         console.log("  ├─ Closing page...");
         await page.close();
       }
-    } catch (e) { console.warn("  ├─ Page close warning:", e); }
+    } catch (e) {
+      console.warn("  ├─ Page close warning:", e);
+    }
 
     try {
       console.log("  ├─ Closing context...");
       await context.close();
-    } catch (e) { console.warn("  ├─ Context close warning:", e); }
+    } catch (e) {
+      console.warn("  ├─ Context close warning:", e);
+    }
 
     try {
       console.log("  ├─ Closing browser...");
       await browser.close();
-    } catch (e) { console.warn("  ├─ Browser close warning:", e); }
+    } catch (e) {
+      console.warn("  ├─ Browser close warning:", e);
+    }
 
     console.log("✅ Browser session closed.");
   }
